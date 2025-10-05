@@ -7,6 +7,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.pagesizes import A6
 from datetime import datetime
 from typing import Dict
+from config import executor, customer
 
 
 
@@ -24,7 +25,10 @@ def extract_filament_weight(gcode_path):
     else:
         return None
 
-def generate_pdf_receipt(data: Dict[str, int], price: float, executor: str, customer: str) -> None:
+def generate_pdf_receipt(data: Dict[str, int],
+                         price: float,
+                         executor: str,
+                         customer: str) -> None:
     try:
         pdfmetrics.registerFont(TTFont('DejaVuSans', 'DejaVuSans.ttf'))
         pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', 'DejaVuSans-Bold.ttf'))
@@ -94,8 +98,8 @@ def main():
     generate_pdf_receipt(
         data,
         2,
-        "я",
-        "не я"
+        executor,
+        customer
     )
 
 if __name__ == "__main__":
