@@ -8,6 +8,7 @@ from datetime import datetime
 import os
 import math
 
+import config
 import weight_from_stl
 
 
@@ -155,8 +156,8 @@ class Receipt:
 
         # Подписи
         today = datetime.now().strftime("%d.%m.%Y")
-        customer = Paragraph(f"Заказчик: {1}",  self.custom_styles["sign_style"])
-        executor = Paragraph(f"Исполнитель: {1}", self.custom_styles["sign_style"])
+        customer = Paragraph(f"Заказчик: {config.customer}",  self.custom_styles["sign_style"])
+        executor = Paragraph(f"Исполнитель: {config.executor}", self.custom_styles["sign_style"])
         date = Paragraph(f"Дата печати: {today}", self.custom_styles["sign_style"])
         self.story.append(KeepTogether([executor, customer, date]))
 
