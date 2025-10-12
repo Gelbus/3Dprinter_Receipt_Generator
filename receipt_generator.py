@@ -6,11 +6,14 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from datetime import datetime
 import os
+import math
+
+import weight_from_stl
 
 
 class Receipt:
     def __init__(self):
-        self.doc = SimpleDocTemplate("data/reports/output.pdf", pagesize=A4)
+        self.doc = SimpleDocTemplate("./data/reports/output2.pdf", pagesize=A4)
         self.styles = getSampleStyleSheet()
 
         font_path = "C:/Windows/Fonts/arial.ttf"
@@ -35,20 +38,12 @@ class Receipt:
             ["d7", "3"],
             ["d8", "1"]
         ]
-        self.parts = [
-            [0, 2, 3, 4, 1, 6],
-            [5, 7]
-        ]
         self.parts_materials = [
             "PETG",
             "PLA"
         ]
-        self.parts_weight = [
-            100,
-            250
-        ]
         self.material_price = {
-            "PETG": 3,
+            "PETG": 2,
             "PLA": 5
         }
         self.final_sum: int = 0
@@ -67,49 +62,85 @@ class Receipt:
 
         self.table.setStyle(TableStyle(self.table_pref))
 
+    def set_data(self, text: str) -> None:
+        lines = text.split("\n")
+        self.parsed_text = []
+        for line in lines:
+            name, num = line.split()
+            self.parsed_text.append([name, int(num)])
+        print(self.parsed_text)
+
+
     def generate_table(self):
         self.table_data = [
             ["Наименование\nизделия",
              "Количество,\n шт.", "Материал",
-             "Масса,\n г.",
+             "Масса 1шт,\n г.",
              "Цена\nза грамм,\nр/г",
              "Цена,\nр.", ],
         ]
-        start_pos = 1
-        end_pos = 1
-        for i in range(len(self.parts)):
-            for detail_num in self.parts[i]:
-                if detail_num == self.parts[i][0]:
 
-                    price = self.parts_weight[i] * self.material_price[self.parts_materials[i]]
-                    self.final_sum += price
-                    self.table_data.append(
-                        [self.parsed_text[detail_num][0],
-                         self.parsed_text[detail_num][1],
-                         self.parts_materials[i],
-                         self.parts_weight[i],
-                         self.material_price[self.parts_materials[i]],
-                         price
-                         ]
-                    )
-                    end_pos += 1
-                else:
-                    self.table_data.append(
-                        [self.parsed_text[detail_num][0],
-                         self.parsed_text[detail_num][1]
-                         ]
-                    )
-                    end_pos += 1
-            self.table_pref.append(('SPAN', (2, start_pos), (2, end_pos - 1)))
-            self.table_pref.append(('SPAN', (3, start_pos), (3, end_pos - 1)))
-            self.table_pref.append(('SPAN', (4, start_pos), (4, end_pos - 1)))
-            self.table_pref.append(('SPAN', (5, start_pos), (5, end_pos - 1)))
-            start_pos = end_pos
+        for i in range(len(self.parsed_text)):
+            filename = self.parsed_text[i][0] + ".stl"
+            file_path = os.path.join('data', 'stl', filename)
+            model_weight = round(weight_from_stl.calculate_mass_from_stl(
+                file_path,
+                1.3
+            ), 2)
+            price = math.ceil(model_weight * self.parsed_text[i][1] * self.material_price['PETG'])
+
+            plit_size = 25
+            name_size = len(self.parsed_text[i][0])
+            name_splits = name_size // plit_size + 1
+            reformed_name = "\n".join([self.parsed_text[i][0][j * plit_size: (j+1) * plit_size] for j in range(name_splits)])
+            # price = reformed_name
+
+
+            self.final_sum += price
+            self.table_data.append(
+                [reformed_name,
+                 self.parsed_text[i][1],
+                 self.parts_materials[0], # пока только PETG
+                 model_weight,
+                 self.material_price[self.parts_materials[0]], # пока только PETG
+                 price
+                 ]
+            )
+        # start_pos = 1
+        # end_pos = 1
+        # for i in range(len(self.parts)):
+        #     for detail_num in self.parts[i]:
+        #         if detail_num == self.parts[i][0]:
+        #
+        #             price = self.parts_weight[i] * self.material_price[self.parts_materials[i]]
+        #             self.final_sum += price
+        #             self.table_data.append(
+        #                 [self.parsed_text[detail_num][0],
+        #                  self.parsed_text[detail_num][1],
+        #                  self.parts_materials[i],
+        #                  self.parts_weight[i],
+        #                  self.material_price[self.parts_materials[i]],
+        #                  price
+        #                  ]
+        #             )
+        #             end_pos += 1
+        #         else:
+        #             self.table_data.append(
+        #                 [self.parsed_text[detail_num][0],
+        #                  self.parsed_text[detail_num][1]
+        #                  ]
+        #             )
+        #             end_pos += 1
+        #     self.table_pref.append(('SPAN', (2, start_pos), (2, end_pos - 1)))
+        #     self.table_pref.append(('SPAN', (3, start_pos), (3, end_pos - 1)))
+        #     self.table_pref.append(('SPAN', (4, start_pos), (4, end_pos - 1)))
+        #     self.table_pref.append(('SPAN', (5, start_pos), (5, end_pos - 1)))
+        #     start_pos = end_pos
 
 
     def generate_report(self):
         # Заголовок
-        self.story.append(Paragraph("Квитанция об оплате", self.custom_styles["title_style"]))
+        self.story.append(Paragraph("Уведомление об оплате услуги", self.custom_styles["title_style"]))
         self.story.append(Paragraph("№ 000.000.000", self.custom_styles["title_style"]))
 
         # Таблица
@@ -119,7 +150,7 @@ class Receipt:
         self.story.append(self.table)
 
         # Итог
-        self.story.append(Paragraph(f"Итого: {self.final_sum} руб.",  self.custom_styles["bold_style"]))
+        self.story.append(Paragraph(f"К оплате: {self.final_sum} руб.",  self.custom_styles["bold_style"]))
         self.story.append(Spacer(1, 20))
 
         # Подписи
@@ -161,6 +192,7 @@ class Receipt:
             fontSize=14,
             spaceAfter=12
         )
+
 
 if __name__ == "__main__":
     receipt = Receipt()

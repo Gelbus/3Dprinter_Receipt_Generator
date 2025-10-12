@@ -10,12 +10,18 @@ from aiogram.fsm.context import FSMContext
 from aiogram import F
 from aiogram.utils.markdown import code
 
+from receipt_generator import Receipt
+import config
+
 
 # === Настройки ===
-BOT_TOKEN = ""  # Вставьте сюда токен вашего бота
+BOT_TOKEN = config.BOT_TOKEN
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
+
+receipt = Receipt()
+
 
 # === FSM (состояния) ===
 class OrderState(StatesGroup):
@@ -176,7 +182,9 @@ async def process_done_uploading(callback: types.CallbackQuery, state: FSMContex
 
     order_text = user_data['order_text']
     # Вызов вашей функции
-    MyFUNC(order_text)
+    receipt.set_data(order_text)
+    receipt.generate_report()
+    # MyFUNC(order_text)
 
     # Удаляем сообщение с кнопкой "Завершить загрузку"
     done_msg_id = user_data.get('done_msg_id')
@@ -187,7 +195,7 @@ async def process_done_uploading(callback: types.CallbackQuery, state: FSMContex
             pass
 
     # Отправка PDF пользователю
-    pdf_path = os.path.join('data', 'reports', 'output.pdf')  # замените на реальное имя файла
+    pdf_path = os.path.join('data', 'reports', 'output2.pdf')  # замените на реальное имя файла
     if os.path.exists(pdf_path):
         await callback.message.answer_document(types.FSInputFile(pdf_path))
     else:
@@ -224,12 +232,6 @@ async def handle_non_doc(message: Message, state: FSMContext):
     msg = await message.answer("Пожалуйста, загрузите файлы или нажмите кнопку завершения.", reply_markup=get_done_keyboard())
     await state.update_data(done_msg_id=msg.message_id)
 
-# === Заглушка для вашей функции ===
-def MyFUNC(order_text: str):
-    # Здесь вызывается ваша логика генерации PDF
-    # Пример: генерация файла в data/reports/output.pdf
-    print("Генерация PDF для:", order_text)
-    # ВАШ КОД ТУТ
 
 if __name__ == '__main__':
     dp.run_polling(bot)

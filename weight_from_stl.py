@@ -1,5 +1,6 @@
 import numpy as np
 from stl import mesh
+import math
 
 
 def calculate_mass_from_stl(stl_file_path, material_density_g_cm3=1.26):
@@ -27,14 +28,11 @@ def calculate_mass_from_stl(stl_file_path, material_density_g_cm3=1.26):
 
     mass_g = volume_cm3 * material_density_g_cm3
 
-    return {
-        'volume_cm3': round(volume_cm3, 2),
-        'mass_g': round(mass_g, 2)
-    }
+    return mass_g
 
 
-# Пример использования:
-if __name__ == "__main__":
-    result = calculate_mass_from_stl("data/stl/направляющая_сервопривода_резака_1.stl", material_density_g_cm3=1.24)
-    print(f"Объём: {result['volume_cm3']} см³")
-    print(f"Масса (PLA): {result['mass_g']} г")
+# # Пример использования:
+# if __name__ == "__main__":
+#     result = calculate_mass_from_stl("data/stl/направляющая_сервопривода_резака_1.stl", material_density_g_cm3=1.24)
+#     print(f"Объём: {result['volume_cm3']} см³")
+#     print(f"Масса (PLA): {result['mass_g']} г")
