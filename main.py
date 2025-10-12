@@ -11,6 +11,8 @@ from config import executor, customer
 
 
 
+
+
 def extract_filament_weight(gcode_path):
     with open(gcode_path, 'r', encoding='utf-8') as file:
         gcode_content = file.read()

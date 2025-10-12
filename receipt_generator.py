@@ -8,17 +8,13 @@ from datetime import datetime
 import os
 
 
-font_path = "C:/Windows/Fonts/arial.ttf"
-pdfmetrics.registerFont(TTFont('ArialUnicode', font_path))
-
-
-
-
-
 class Receipt:
     def __init__(self):
-        self.doc = SimpleDocTemplate("report.pdf", pagesize=A4)
+        self.doc = SimpleDocTemplate("data/reports/output.pdf", pagesize=A4)
         self.styles = getSampleStyleSheet()
+
+        font_path = "C:/Windows/Fonts/arial.ttf"
+        pdfmetrics.registerFont(TTFont('ArialUnicode', font_path))
 
         self.custom_styles = {}
 
