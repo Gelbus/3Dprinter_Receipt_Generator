@@ -67,7 +67,8 @@ class Receipt:
         lines = text.split("\n")
         self.parsed_text = []
         for line in lines:
-            name, num = line.split()
+            splited = line.split()
+            name, num = ' '.join(splited[0:-1]), int(splited[-1])
             self.parsed_text.append([name, int(num)])
         print(self.parsed_text)
 

@@ -45,15 +45,27 @@ def get_main_keyboard():
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, one_time_keyboard=True)
 
 # === Проверка формата сообщения ===
+# def parse_order(text: str):
+#     lines = text.strip().split('\n')
+#     items = []
+#     for line in lines:
+#         match = re.match(r'^([a-zA-Zа-яА-ЯёЁ0-9_-]+)\s+(\d+)$', line.strip())
+#         if not match:
+#             return None
+#         name, count = match.groups()
+#         items.append((name, int(count)))
+#     return items
 def parse_order(text: str):
     lines = text.strip().split('\n')
     items = []
     for line in lines:
-        match = re.match(r'^([a-zA-Zа-яА-ЯёЁ0-9_-]+)\s+(\d+)$', line.strip())
+        line = line.strip()
+        # Ищем последнее слово, состоящее только из цифр, в конце строки
+        match = re.match(r'^(.+?)\s+(\d+)$', line)
         if not match:
             return None
         name, count = match.groups()
-        items.append((name, int(count)))
+        items.append((name.strip(), int(count)))
     return items
 
 # === Функция обновления кнопки с задержкой и удалением старого сообщения ===
